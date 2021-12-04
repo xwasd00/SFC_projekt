@@ -7,37 +7,49 @@
 //https://www.cmpe.boun.edu.tr/~ethem/files/papers/annsys.pdf
 //https://link.springer.com/article/10.1007/s00521-009-0298-3
 
+//simple dataset? https://codereview.stackexchange.com/questions/254212/simple-dataset-class-in-c
+//other datasets? mehrotra.zip, proben1.zip
+
 using namespace std;
 
 int main(int argc, char const *argv[]) {
-	vector<unsigned> topology = {2, 2, 1};
-	vector<t_Sample> train_data;
-
-	t_Sample s1;
-	s1.input = {0, 0};
-	s1.desired_output = {0};
-	train_data.push_back(s1);
+	// TODO - argumenty:
+	// mi, eps, w_load_file, w_save_file, topology_file, test_file, train_file, debug level
+	double eps = 0.01;
+	double mi = 0.6;
+	string w_save_file = "w.test";
+	string w_load_file = "w.test";
 	
-	t_Sample s2;
-	s2.input = {0, 1};
-	s2.desired_output = {1};
-	train_data.push_back(s2);
+	//string topology_file = "xor-topology.txt";
+	string topology_file = "B8-Spiral-topology.txt";
 
-	t_Sample s3;
-	s3.input = {1, 0};
-	s3.desired_output = {1};
-	train_data.push_back(s3);
+	//string test_file = "xor-test.txt";
+	string test_file = "B8-Spiral.dta";
 
-	t_Sample s4;
-	s4.input = {1, 1};
-	s4.desired_output = {0};
-	train_data.push_back(s4);
+	//string train_file = "xor.txt";
+	string train_file = "B8-Spiral.dta";
 
 
-	Madaline m(topology);
-	m.print_response_on_train_data(train_data);
+
+	Madaline m(topology_file, mi, eps);
+
+	vector<t_Sample> train_data;
+	m.load_data(train_data, train_file);
+	
+	vector<t_Sample> test_data;
+	m.load_data(test_data, test_file);
+
+	cout << "train data" << endl;
+	//m.print_response_on_train_data(train_data);
+	m.print_response_on_data(train_data);
+	
 	cout << "training" << endl;
-	m.train(train_data);
-	m.print_response_on_train_data(train_data);
+	m.train(train_data, 0.1, 10000);
+
+
+	cout << "test data" << endl;
+	//m.print_response_on_train_data(test_data);
+	m.print_response_on_data(test_data);
+
 	return 0;
 }

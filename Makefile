@@ -11,7 +11,7 @@ $(PROJ):
 	$(CC) $(CFLAGS) $(SRC) $(LD) -o $(PROJ)
 
 run:$(PROJ)
-	./$(PROJ)
+	./$(PROJ) #> tmp.txt
 
 clean:
 	rm -f $(PROJ)
