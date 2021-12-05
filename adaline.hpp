@@ -6,7 +6,6 @@
 #include <fstream>
 #include <sstream>
 
-
 class Adaline;
 typedef std::vector<Adaline> Layer;
 

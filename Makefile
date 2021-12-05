@@ -11,7 +11,7 @@ $(PROJ):
 	$(CC) $(CFLAGS) $(SRC) $(LD) -o $(PROJ)
 
 run:$(PROJ)
-	./$(PROJ) #> tmp.txt
+	./$(PROJ) --save "w.test" --topology "xor-topology.txt" --train "xor.txt" --test "xor-test.txt" -e 0.2 -d 3
 
 clean:
 	rm -f $(PROJ)
