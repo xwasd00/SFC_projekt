@@ -76,14 +76,20 @@ void Madaline::get_result(vector<double> &results) {
 }
 
 void Madaline::train(vector<t_Sample> &train_data, const double &threshold, const unsigned &max_iterations, const unsigned &debug_level) {
-	//double max_error; // = DBL_MAX;
-	double wrong_count;
+	assert(train_data.size() != 0);
+	double sum_error = 0;
+	double average_error = 0;
 	unsigned iterations = 0;
 	vector<double> results;
 
+	if (debug_level > 0) {
+		cout << "training..." << endl;
+	}
+
 	do {
-		//max_error = 0;
 		for (unsigned i = 0; i < train_data.size(); ++i) {
+			this->update_network(train_data[i]);
+			/*
 			this->forward(train_data[i].input);
 			this->get_result(results);
 			c_net_error = this->error(train_data[i].desired_output, results);
@@ -91,31 +97,26 @@ void Madaline::train(vector<t_Sample> &train_data, const double &threshold, cons
 			if(c_net_error > threshold) {
 				this->update_network(train_data[i]);
 			}
+			*/
+			
 		}
-		wrong_count = 0;
-		for (unsigned i = 0; i < train_data.size(); ++i) {
-			this->forward(train_data[i].input);
-			this->get_result(results);
-			for(unsigned j = 0; j < train_data[i].desired_output.size(); ++j) {
-				if(abs(train_data[i].desired_output[j] - results[j]) >= 0.5) {
-					wrong_count++;
-					break;
-				}
-			}
-		}
-		/*
+		sum_error = 0;
 		for(unsigned i = 0; i < train_data.size(); ++i) {
 			this->forward(train_data[i].input);
 			this->get_result(results);
 			c_net_error = this->error(train_data[i].desired_output, results);
-			max_error = max(c_net_error, max_error);
-		}*/
+			sum_error += c_net_error; 
+		}
+		average_error = sum_error / (double) train_data.size();
 		if (debug_level > 2) {
-			cout << "wrong classified: " << (double)wrong_count/(double)train_data.size() << " iteration: " << iterations << endl;
+			cout << "average error: " << average_error << " iteration: " << iterations << endl;
 		}
 		++iterations;
-	//} while (max_error > threshold && iterations < max_iterations);
-	} while ((double)wrong_count/(double)train_data.size() > threshold && iterations < max_iterations);
+	} while (average_error > threshold && iterations < max_iterations);
+
+	if (debug_level > 0) {
+		cout << "training ended" << endl;
+	}
 }
 
 void Madaline::update_network(const t_Sample &train_sample) {
@@ -204,42 +205,6 @@ void Madaline::load_data(vector<t_Sample> &train_data, const string &train_file)
     file.close();
 }
 
-void Madaline::load_test_data(std::vector<t_Sample> &test_data,const std::string &test_file) {
-	fstream file;
-    double d;
-    string tp;
-    vector<double> tmp_data;
-
-	file.open(test_file, ios::in);
-	if (file.is_open()) {
-
-		// read line
-    	while(getline(file, tp)) {
-    		
-    		//convert line to string stream
-    		stringstream ss(tp);
-
-    		//clear vector and add double values from line
-    		tmp_data.clear();
-    		while (ss >> d) {
-        		tmp_data.push_back(d);
-    		}
-
-    		// check number of values in line and number of inputs of network
-    		if(tmp_data.size() == c_layers[0].size()){
-
-    			// create sample and add to test data
-    			t_Sample sample;
-    			for(unsigned i = 0; i < c_layers[0].size(); ++i) {
-        			sample.input.push_back(tmp_data[i]);
-        		}
-        		test_data.push_back(sample);
-        	}
-    	}
-    }
-    file.close();
-}
-
 
 void Madaline::save_weights(string &save_file){
 	ofstream file(save_file);
@@ -322,31 +287,14 @@ void Madaline::print_input() {
 	cout << "]" << endl;
 }
 
-void Madaline::print_response_on_data(const vector<t_Sample> &test_data) {
-	vector<double> results;
 
-	cout << "---------------------------------------------" << endl;
-	cout << "TEST DATA:" << endl;
-	for (unsigned i = 0; i < test_data.size(); ++i) {
-		this->forward(test_data[i].input);
-		this->get_result(results);
-		cout << "\t";
-		this->print_input();
-		cout << "\t";
-		this->print_output();
-		cout << endl;
-	}
-	cout << "---------------------------------------------" << endl;
-
-}
-
-void Madaline::print_response_on_train_data(const vector<t_Sample> &train_data, const unsigned &debug_level) {
+void Madaline::print_response_on_data(const vector<t_Sample> &train_data, const unsigned &debug_level) {
 	int wrong_count = 0;
 	bool wrong_output = false;
 	vector<double> results;
 	
 	cout << "---------------------------------------------" << endl;
-	cout << "TRAINING OUTPUT:" << endl;
+	cout << "RESPONSE:" << endl;
 	if(debug_level > 1){
 		this->print_network();
 	}

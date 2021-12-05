@@ -51,21 +51,16 @@ void Adaline::set_output(const double val) {
 }
 
 double Adaline::activation_function(const double val) {
-	//return (1 - exp(-2 * val))/(1 + exp(-2 * val));
 	return (1 / (1 + exp(-val)));
 	//return tanh(val);
 }
 
 void Adaline::add_epsilon() {
 	c_add_epsilon = true;
-	//c_potential += c_epsilon;
-	//c_output = activation_function(c_potential);
 }
 
 void Adaline::remove_epsilon() {
 	c_add_epsilon = false;
-	//c_potential -= c_epsilon;
-	//c_output = activation_function(c_potential);
 }
 
 void Adaline::update_weights(const Layer &previous_layer, const double net_e, const double neuron_net_e) {

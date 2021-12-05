@@ -24,7 +24,6 @@ public:
 	void partial_forward(const unsigned layer_index, std::vector<double> &output);
 	double error(const std::vector<double> &d, const std::vector<double> &y);
 	void load_data(std::vector<t_Sample> &train_data,const std::string &train_file);
-	void load_test_data(std::vector<t_Sample> &test_data,const std::string &test_file);
 	void save_weights(std::string &save_file);
 	void load_weights(std::string &load_file);
 	~Madaline();
@@ -33,8 +32,7 @@ public:
 	void print_network();
 	void print_input();
 	void print_output();
-	void print_response_on_data(const std::vector<t_Sample> &test_data);
-	void print_response_on_train_data(const std::vector<t_Sample> &train_data, const unsigned &debug_level);
+	void print_response_on_data(const std::vector<t_Sample> &train_data, const unsigned &debug_level);
 
 private:
 	std::vector<Layer> c_layers;

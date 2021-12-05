@@ -1,16 +1,6 @@
 #include "madaline.hpp"
 #include <getopt.h>
 
-//https://www.slideshare.net/infobuzz/adaline-madaline
-//https://pdfs.semanticscholar.org/ea91/de67f2f2d8635349cdbde54cc8c7e43f13c5.pdf
-//http://ziyang.eecs.umich.edu/~dickrp/iesr/lectures/widrow90sep-present.pdf
-//https://www.cmpe.boun.edu.tr/~ethem/files/papers/annsys.pdf
-//https://link.springer.com/article/10.1007/s00521-009-0298-3
-
-//datasets? mehrotra.zip, proben1.zip
-
-// getopt: https://codeyarns.com/2015/01/30/how-to-parse-program-options-in-c-using-getopt_long/
-
 using namespace std;
 
 bool file_exist(char *path) {
@@ -20,7 +10,32 @@ bool file_exist(char *path) {
 
 
 void print_help() {
-	cout << "TODO: help" << endl;
+	cout << "usage: ./main [-h] -g TOPOLOGY [-r TRAIN] [-t TEST] [-s SAVE] [-m MI] [-e EPS] [-p THRESHOLD] [-i I] [-d LEVEL]" << endl;
+	cout << "or ./main [-h] -l LOAD [-r TRAIN] [-t TEST] [-s SAVE] [-m MI] [-e EPS] [-p THRESHOLD] [-i I] [-d LEVEL]" << endl;
+	cout << endl;
+	cout << "optional arguments:" << endl;
+	cout << "  -h, --help                show this help message and exit" << endl;
+	cout << "  -r, --train TRAIN         train network with training data from the file TRAIN" << endl;
+	cout << "  -t, --test TEST           test network with test data from the file TEST" << endl;
+	cout << "  -s, --save SAVE           file, where trained network is stored" << endl;
+	cout << "  -m, --mi MI               learning coeficient (default 0.6)" << endl;
+	cout << "  -e, --eps EPS             perturbation - Delta s (default 0.01)" << endl;
+	cout << "  -p, --threshold THRESHOLD" << endl;
+	cout << "                            minimal average error of training" << endl;
+	cout << "                            training will stop if net error is less than threshold (default 0.1)" << endl;
+	cout << "  -i, --iterations I        number of iterations over train data (default 10000)" << endl;
+	cout << "  -d, --debug LEVEL         level of debugging info:" << endl;
+	cout << "                            0: no debugging info" << endl;
+	cout << "                            1: level 0 + response to train data" << endl;
+	cout << "                            2: level 1 + print network" << endl;
+	cout << "                            3: level 2 + print average error with every iteration in training" << endl;
+	cout << "                               and print network on load" << endl;
+	cout << endl;
+	cout << "required named arguments:" << endl;
+	cout << "  -g, --topology TOPOLOGY" << endl;
+	cout << "                            file, where is stored topology of network" << endl;
+	cout << "  -l, --load LOAD           file, where is stored network, this will load that network" << endl;
+	return;
 }
 
 int main(int argc, char **argv) {
@@ -54,7 +69,7 @@ int main(int argc, char **argv) {
 	};
 	int option;
 
-	// získání možností z getopt_long 
+	// get option from getopt_long 
 	while((option = getopt_long(argc, argv, short_opts, longopts, nullptr)) != -1){
 		switch(option){
 
@@ -79,10 +94,6 @@ int main(int argc, char **argv) {
 
 			// ./main --save <w_save_file>
 			case 's':
-				if (!file_exist(optarg)) {
-        			cerr << "File " << optarg << " not found" << endl;  
-        			return 2;         
-				}
 				w_save_file = optarg;
 				break;
 
@@ -149,12 +160,13 @@ int main(int argc, char **argv) {
 
 	// only one of them can be loaded
 	if (!((w_load_file.size() == 0) ^ (topology_file.size() == 0))) {
-		cerr << "cannot load both topology_file and w_load_file, choose one" << endl;
+		cerr << "cannot load both TOPOLOGY file and LOAD file, choose one" << endl;
 		return 2;
 	}
 
 	Madaline m(mi, eps);
 
+	// load topology -> initialize with random weights
 	if (topology_file.size() != 0) {
 		m.construct_topology(topology_file);
 		if (debug_level > 2) {
@@ -162,6 +174,8 @@ int main(int argc, char **argv) {
 			m.print_network();
 		}
 	}
+
+	// load network -> load weights from file
 	if (w_load_file.size() != 0){
 		m.load_weights(w_load_file);
 		if (debug_level > 2) {
@@ -170,27 +184,37 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	// load training data and train network
 	if (train_file.size() != 0) {
+
 		// load training data
 		vector<t_Sample> train_data;
 		m.load_data(train_data, train_file);
 		if (debug_level > 0) {
-			m.print_response_on_train_data(train_data, debug_level);
+			cout << endl;
+			cout << "TRAINING DATA:" << endl;
+			m.print_response_on_data(train_data, debug_level);
 		}
 
-		// train
+		// train network
 		m.train(train_data, threshold, iterations, debug_level);
 		if (debug_level > 0) {
-			m.print_response_on_train_data(train_data, debug_level);
+			cout << endl;
+			cout << "TRAINING DATA:" << endl;
+			m.print_response_on_data(train_data, debug_level);
 		}
 	}
 
+	// load test data and print response
 	if (test_file.size() != 0) {
 		vector<t_Sample> test_data;
-		m.load_test_data(test_data, test_file);
-		m.print_response_on_data(test_data);
+		m.load_data(test_data, test_file);
+		cout << endl;
+		cout << "TEST DATA:" <<endl;
+		m.print_response_on_data(test_data, debug_level);
 	}
 
+	// save to file
 	if (w_save_file.size() != 0) {
 		m.save_weights(w_save_file);
 	}
